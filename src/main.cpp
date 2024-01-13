@@ -32,6 +32,7 @@ String daysOfTheWeek[7] = {
 void printWiFi();
 void printRTCTime(DateTime datetime); 
 void printNTPTime(NTPClient timeClient);
+void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
 
 void setup() {
   Serial.begin(115200); 
@@ -42,8 +43,11 @@ void setup() {
     while (1);
   }
 
-  rtc.adjust(DateTime(2024,1,14,6,0,0));  
-
+/*
+on startup, pull time from RTC.
+when internet connected, update RTC with NTP. 
+when internet not connected, get time from RTC. 
+*/
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
 
@@ -51,13 +55,13 @@ void setup() {
   //   Serial.println("Station failed to configure.");
   // }
   
-  WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500); 
-    Serial.print(".");
-  }
-  //  print local IP address and start web server 
-  printWiFi();
+  // WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
+  // // while (WiFi.status() != WL_CONNECTED) {
+  // //   delay(500); 
+  // //   Serial.print(".");
+  // // }
+  // //  print local IP address and start web server 
+  // printWiFi();
 
   // check if the ESP has internet access 
 
@@ -69,7 +73,11 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   timeClient.update();
+  bool NTPUpdateStatus = timeClient.isTimeSet();
   printNTPTime(timeClient);
+  Serial.print("NTP update status: ");
+  Serial.println(NTPUpdateStatus);
+  if (NTPUpdateStatus) {adjustRTCWithNTP(timeClient, rtc);}
   dtnow = rtc.now(); 
   printRTCTime(dtnow);
   delay(1000);
@@ -128,4 +136,16 @@ void printNTPTime(NTPClient timeClient) {
   Serial.print(' ');
   Serial.print(timeClient.getDay());
   Serial.println();
+}
+
+void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
+  unsigned long epochTime = timeClient.getEpochTime();
+  int _year = year(epochTime);
+  int _month = month(epochTime);
+  int _day = day(epochTime);
+  int hour = timeClient.getHours();
+  int minute = timeClient.getMinutes();
+  int second = timeClient.getSeconds();
+  rtc.adjust(DateTime(_year, _month, _day, hour, minute, second));
+  Serial.println("time adjusted from NTP to RTC.");
 }
