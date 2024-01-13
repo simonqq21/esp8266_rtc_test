@@ -13,8 +13,9 @@
 RTC_DS1307 rtc; 
 DateTime now; 
 
+const long UTCOffsetInSeconds = 28800;
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
+NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph");
 
 String daysOfTheWeek[7] = {
   "Monday", 
@@ -28,7 +29,8 @@ String daysOfTheWeek[7] = {
 
 // put function declarations here:
 void printWiFi();
-void printDateTime(DateTime datetime); 
+void printRTCTime(DateTime datetime); 
+void printNTPTime(NTPClient timeClient);
 
 void setup() {
   Serial.begin(115200); 
@@ -55,12 +57,17 @@ void setup() {
   }
   //  print local IP address and start web server 
   printWiFi();
+
+  timeClient.begin();
+  timeClient.setTimeOffset(UTCOffsetInSeconds);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  timeClient.update();
+  printNTPTime(timeClient);
   now = rtc.now(); 
-  printDateTime(now);
+  printRTCTime(now);
   delay(1000);
 }
 
@@ -78,7 +85,8 @@ void printWiFi() {
   Serial.println(" dBm");
 }
 
-void printDateTime(DateTime datetime) {
+void printRTCTime(DateTime datetime) {
+  Serial.println("RTC time: ");
   Serial.print(datetime.year(), DEC);
   Serial.print('/');
   Serial.print(datetime.month(), DEC);
@@ -94,4 +102,20 @@ void printDateTime(DateTime datetime) {
   Serial.print(datetime.dayOfTheWeek(), DEC); 
   Serial.print(' '); 
   Serial.println(daysOfTheWeek[datetime.dayOfTheWeek()]);
+  Serial.println();
+}
+
+void printNTPTime(NTPClient timeClient) {
+  Serial.println("NTP time: ");
+  Serial.println(timeClient.getEpochTime()); 
+  Serial.print(timeClient.getHours()); 
+  Serial.print(":");
+  Serial.print(timeClient.getMinutes()); 
+  Serial.print(":");
+  Serial.print(timeClient.getSeconds()); 
+  Serial.print(' ');
+  Serial.print(timeClient.getFormattedTime());
+  Serial.print(' ');
+  Serial.print(timeClient.getDay());
+  Serial.println();
 }
