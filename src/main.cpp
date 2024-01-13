@@ -55,13 +55,13 @@ when internet not connected, get time from RTC.
   //   Serial.println("Station failed to configure.");
   // }
   
-  // WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
-  // // while (WiFi.status() != WL_CONNECTED) {
-  // //   delay(500); 
-  // //   Serial.print(".");
-  // // }
-  // //  print local IP address and start web server 
-  // printWiFi();
+  WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(500); 
+  //   Serial.print(".");
+  // }
+  //  print local IP address and start web server 
+  printWiFi();
 
   // check if the ESP has internet access 
 
