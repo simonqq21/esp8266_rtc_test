@@ -6,12 +6,13 @@
 #include <NTPClient.h> 
 #include <ESP8266WiFi.h> 
 #include <WiFiUdp.h>
+#include <TimeLib.h>
 
 #define LOCAL_SSID "QUE-STARLINK"
 #define LOCAL_PASS "Quefamily01259"
 
 RTC_DS1307 rtc; 
-DateTime now; 
+DateTime dtnow; 
 
 const long UTCOffsetInSeconds = 28800;
 WiFiUDP ntpUDP;
@@ -41,7 +42,7 @@ void setup() {
     while (1);
   }
 
-  // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));  
+  rtc.adjust(DateTime(2024,1,14,6,0,0));  
 
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
@@ -58,16 +59,19 @@ void setup() {
   //  print local IP address and start web server 
   printWiFi();
 
+  // check if the ESP has internet access 
+
+
   timeClient.begin();
-  timeClient.setTimeOffset(UTCOffsetInSeconds);
+  timeClient.setTimeOffset(UTCOffsetInSeconds); // GMT+8
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   timeClient.update();
   printNTPTime(timeClient);
-  now = rtc.now(); 
-  printRTCTime(now);
+  dtnow = rtc.now(); 
+  printRTCTime(dtnow);
   delay(1000);
 }
 
@@ -106,8 +110,14 @@ void printRTCTime(DateTime datetime) {
 }
 
 void printNTPTime(NTPClient timeClient) {
+  unsigned long epochTime = timeClient.getEpochTime();
   Serial.println("NTP time: ");
-  Serial.println(timeClient.getEpochTime()); 
+  Serial.print(year(epochTime));
+  Serial.print('/');
+  Serial.print(month(epochTime));
+  Serial.print('/');
+  Serial.println(day(epochTime));
+  Serial.println(epochTime); 
   Serial.print(timeClient.getHours()); 
   Serial.print(":");
   Serial.print(timeClient.getMinutes()); 
