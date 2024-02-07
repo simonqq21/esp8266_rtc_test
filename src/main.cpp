@@ -30,6 +30,7 @@ String daysOfTheWeek[7] = {
 
 // put function declarations here:
 void printWiFi();
+void printTime(int year, int month, int day, int hour, int minute, int second);
 void printRTCTime(DateTime datetime); 
 void printNTPTime(NTPClient timeClient);
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
@@ -99,42 +100,37 @@ void printWiFi() {
 
 void printRTCTime(DateTime datetime) {
   Serial.println("RTC time: ");
-  Serial.print(datetime.year(), DEC);
-  Serial.print('/');
-  Serial.print(datetime.month(), DEC);
-  Serial.print('/');
-  Serial.print(datetime.day(), DEC);
-  Serial.print(' ');
-  Serial.print(datetime.hour(), DEC); 
-  Serial.print(':'); 
-  Serial.print(datetime.minute(), DEC); 
-  Serial.print(':'); 
-  Serial.print(datetime.second(), DEC); 
-  Serial.print(' '); 
-  Serial.print(datetime.dayOfTheWeek(), DEC); 
-  Serial.print(' '); 
-  Serial.println(daysOfTheWeek[datetime.dayOfTheWeek()]);
-  Serial.println();
+  printTime(datetime.year(), datetime.month(), datetime.day(), 
+    datetime.hour(), datetime.minute(), datetime.second());
+  // Serial.print(datetime.dayOfTheWeek(), DEC); 
+  // Serial.print(' '); 
+  // Serial.println(daysOfTheWeek[datetime.dayOfTheWeek()]);
+  // Serial.println();
 }
 
 void printNTPTime(NTPClient timeClient) {
   unsigned long epochTime = timeClient.getEpochTime();
   Serial.println("NTP time: ");
-  Serial.print(year(epochTime));
+  printTime(year(epochTime), month(epochTime), day(epochTime), 
+    timeClient.getHours(), timeClient.getMinutes(), timeClient.getSeconds());
+  // Serial.print(timeClient.getFormattedTime());
+  // Serial.print(' ');
+  // Serial.print(timeClient.getDay());
+  // Serial.println();
+}
+
+void printTime(int year, int month, int day, int hour, int minute, int second) {
+  Serial.print(year);
   Serial.print('/');
-  Serial.print(month(epochTime));
+  Serial.print(month);
   Serial.print('/');
-  Serial.println(day(epochTime));
-  Serial.println(epochTime); 
-  Serial.print(timeClient.getHours()); 
-  Serial.print(":");
-  Serial.print(timeClient.getMinutes()); 
-  Serial.print(":");
-  Serial.print(timeClient.getSeconds()); 
+  Serial.println(day);
   Serial.print(' ');
-  Serial.print(timeClient.getFormattedTime());
-  Serial.print(' ');
-  Serial.print(timeClient.getDay());
+  Serial.print(hour); 
+  Serial.print(":");
+  Serial.print(minute); 
+  Serial.print(":");
+  Serial.print(second); 
   Serial.println();
 }
 
